@@ -1,46 +1,161 @@
-# Getting Started with Create React App
+# **RegEx Syntax Tree Tester**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![App Screenshot](./app-screen.png)  
+_Figure: Interface of the RegEx Syntax Tree Tester application_
 
-## Available Scripts
+## **Description**
 
-In the project directory, you can run:
+The **RegEx Syntax Tree Tester** is a web application that allows users to test regular expressions and transform them into a **Deterministic Finite Automaton (DFA)**. The project is based on concepts such as regular expression parsing, the construction of non-deterministic finite automata (NFA), their conversion into DFA, and DFA minimization. It is developed using **React.js** with **TypeScript** and uses **D3.js** to visualize syntax trees.
 
-### `npm start`
+The application allows the user to:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- Enter a regular expression.
+- Visualize the syntax tree generated from the expression.
+- View the matching results of the text lines in the file against the provided expression.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## **Features**
 
-### `npm test`
+- **Regular Expression Parsing**: Transforms the expression into a **syntax tree**.
+- **NFA Construction**: Converts the syntax tree into a **Non-Deterministic Finite Automaton**.
+- **DFA Conversion**: Transforms the NFA into a **DFA** via the subset construction algorithm.
+- **DFA Minimization**: Reduces the number of states in the DFA for more efficient execution.
+- **Matching Test**: Verifies the text lines against the expression provided by the user.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### **User Interface Screenshot**
 
-### `npm run build`
+![App Functionality](./syntax-tree.png)  
+_Figure: Example of a syntax tree for the expression S[a-z]+on_
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## **How to Run This Project?**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### **Prerequisites**
 
-### `npm run eject`
+Before running this project, make sure you have installed:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- **Node.js** v22.1.0 (version 18 or later)
+- **npm** or **yarn** (for dependency management)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### **Installation**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+1. Clone this repository:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+   ```bash
+   git clone https://github.com/your-username/regex-tester.git
+   cd regex-tester
+   ```
 
-## Learn More
+2. Install dependencies using **npm** or **yarn**:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### **Running the Project**
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Start the development server with **npm** or **yarn**:
+
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+2. Open your browser and navigate to:
+   ```bash
+   http://localhost:3000
+   ```
+
+---
+
+## **Code Explanation**
+
+### **1. Regular Expression Parsing**
+
+Regular expression parsing is done using the `RegExParser` class. This parser transforms each character of the expression into a node in the syntax tree.
+
+```typescript
+class RegExParser {
+  static parseRegEx(input: string): RegExTree {
+    const trees = this.buildTrees(input);
+    return this.parseConcat(trees);
+  }
+}
+```
+
+---
+
+### **2. NFA Construction**
+
+From the syntax tree, we build a non-deterministic finite automaton (NFA). Epsilon (ε) transitions allow states to be connected without reading symbols.
+
+```typescript
+function syntaxTreeToAutomaton(tree: RegExTree): Automaton {
+  switch (tree.root) {
+    case RegExParser.CONCAT:
+      return handleConcat(tree);
+    case RegExParser.ALTERN:
+      return handleUnion(tree);
+    case RegExParser.ETOILE:
+      return handleKleeneStar(tree);
+    default:
+      return handleSymbol(tree.root);
+  }
+}
+```
+
+---
+
+### **3. DFA Conversion**
+
+The subset construction algorithm is used to convert the NFA into a DFA, generating a deterministic automaton from subsets of states.
+
+```typescript
+function simulateNFA(automaton: Automaton, input: string): boolean {
+  let currentStates = epsilonClosure(automaton.startState, new Set<State>());
+  for (const symbol of input) {
+    currentStates = move(currentStates, symbol);
+  }
+  return [...currentStates].some((state) => state === automaton.acceptState);
+}
+```
+
+---
+
+### **4. DFA Minimization**
+
+The minimization algorithm reduces the number of states by grouping equivalent states.
+
+```typescript
+function minimizeDFA(automaton: Automaton): Automaton {
+  const partitions: Set<State>[] = [
+    new Set(states.filter((state) => state.isAccepting)),
+    new Set(states.filter((state) => !state.isAccepting)),
+  ];
+}
+```
+
+---
+
+## **Dependencies**
+
+The main dependencies used in this project are:
+
+- **React.js**: Framework for creating the user interface.
+- **TypeScript**: Language used for better type management and error reduction.
+- **D3.js**: Library for visualizing syntax trees in graphical form.
+- **Tailwind CSS**: Used for styling the application.
+
+---
+
+## **References**
+
+- **Reference book**: [Introduction to Automata Theory, Languages, and Computation](http://infolab.stanford.edu/~ullman/focs.html) - Aho, Hopcroft, Ullman.
+
+---
+
+## **Author**
+
+By **OTTO Dieu-Puissant Cyprien** for the course **Algorithm Development for Network Applications** at [La Sorbonne](https://www.sorbonne-universite.fr).

@@ -1,26 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import LanguagesPage from "./pages/LanguagesPage";
+import BooksPage from "./pages/BooksPage";
+import Navbar from "./components/NavBar";
+import RegExTester from "./pages/RegExTester";
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <Navbar />
+        <div className="py-8">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/languages" element={<LanguagesPage />} />
+            <Route path="/books/:lang" element={<BooksPage />} />
+            <Route path="/regex-test" element={<RegExTester />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;

@@ -1,0 +1,103 @@
+.regex-tester {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-top: 40px;
+  padding: 50px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+label {
+  font-size: 1rem;
+  margin-right: 10px;
+  color: #555;
+}
+
+input[type="text"] {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 70%;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.syntax-tree {
+  margin-top: 20px;
+}
+
+.syntax-tree h2 {
+  font-size: 1.5rem;
+  color: #444;
+}
+
+.syntax-tree pre {
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.file-results {
+  margin-top: 20px;
+}
+
+.file-results h2 {
+  font-size: 1.5rem;
+  color: #444;
+}
+
+.file-results ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.file-results li {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.file-results li span {
+  color: #555;
+}
+
+.file-results li.match {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.file-results li.no-match {
+  background-color: #f8d7da;
+  color: #721c24;
+}
