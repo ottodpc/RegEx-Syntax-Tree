@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
         </a>
 
         <a
-          href="https://github.com/arthurescriou/gutenberg-app"
+          href="https://github.com/ottodpc/RegEx-Syntax-Tree"
           target="_blank"
           rel="noopener noreferrer"
           className="text-black no-underline"
