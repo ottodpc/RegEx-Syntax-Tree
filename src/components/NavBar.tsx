@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
+import BookImg from "../assets/book.png";
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -10,22 +10,22 @@ const Navbar: React.FC = () => {
 
   return (
     // TODO : Navbar responsive
-    <nav className="bg-white shadow-md fixed w-full z-10">
-      <div className="container mx-auto px-4 flex justify-between items-center py-4">
+    <nav className="fixed z-10 w-full bg-white shadow-md">
+      <div className="container flex items-center justify-between px-4 py-4 mx-auto">
         {/* NOTE : Logo */}
         <div className="text-2xl font-bold">
           <Link to="/" className="text-black no-underline">
             <img
-              src="/assets/book.png"
+              src={BookImg}
               alt="Logo"
-              className="w-10 h-10 inline-block mr-2 "
+              className="inline-block w-10 h-10 mr-2 "
             />
             Gutenberg project
           </Link>
         </div>
 
         {/* NOTE : Desktop Menu */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden space-x-8 md:flex">
           <Link
             to="/languages"
             className="text-black no-underline hover:text-green-500"
@@ -91,17 +91,17 @@ const Navbar: React.FC = () => {
 
       {/* NOTE : Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-md">
+        <div className="bg-white shadow-md md:hidden">
           <Link
             to="/languages"
-            className="block text-black no-underline px-4 py-2 hover:bg-gray-200"
+            className="block px-4 py-2 text-black no-underline hover:bg-gray-200"
             onClick={toggleMenu}
           >
             Find book
           </Link>
           <Link
             to="/regex-test"
-            className="block text-black no-underline px-4 py-2 hover:bg-gray-200"
+            className="block px-4 py-2 text-black no-underline hover:bg-gray-200"
             onClick={toggleMenu}
           >
             RegEx Tester
@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
             href="https://www.gutenberg.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-black no-underline px-4 py-2 hover:bg-gray-200"
+            className="block px-4 py-2 text-black no-underline hover:bg-gray-200"
             onClick={toggleMenu}
           >
             The Gutenberg Project
@@ -119,7 +119,7 @@ const Navbar: React.FC = () => {
             href="https://www-apr.lip6.fr/~buixuan/daar2024"
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-black no-underline px-4 py-2 hover:bg-gray-200"
+            className="block px-4 py-2 text-black no-underline hover:bg-gray-200"
             onClick={toggleMenu}
           >
             DAAR
