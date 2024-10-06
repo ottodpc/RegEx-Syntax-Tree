@@ -42,8 +42,8 @@ Before running this project, make sure you have installed:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/your-username/regex-tester.git
-   cd regex-tester
+   git clone https://github.com/ottodpc/RegEx-Syntax-Tree.git
+   cd RegEx-Syntax-Tree
    ```
 
 2. Install dependencies using **npm** or **yarn**:
