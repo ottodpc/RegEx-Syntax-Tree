@@ -1,15 +1,13 @@
 {
   "files": {
-    "main.css": "/RegEx-Syntax-Tree/static/css/main.16b2885b.css",
-    "main.js": "/RegEx-Syntax-Tree/static/js/main.035675a6.js",
-    "static/js/453.fd7cce72.chunk.js": "/RegEx-Syntax-Tree/static/js/453.fd7cce72.chunk.js",
+    "main.css": "/RegEx-Syntax-Tree/static/css/main.67528402.css",
+    "main.js": "/RegEx-Syntax-Tree/static/js/main.8fdc77cf.js",
     "index.html": "/RegEx-Syntax-Tree/index.html",
-    "main.16b2885b.css.map": "/RegEx-Syntax-Tree/static/css/main.16b2885b.css.map",
-    "main.035675a6.js.map": "/RegEx-Syntax-Tree/static/js/main.035675a6.js.map",
-    "453.fd7cce72.chunk.js.map": "/RegEx-Syntax-Tree/static/js/453.fd7cce72.chunk.js.map"
+    "main.67528402.css.map": "/RegEx-Syntax-Tree/static/css/main.67528402.css.map",
+    "main.8fdc77cf.js.map": "/RegEx-Syntax-Tree/static/js/main.8fdc77cf.js.map"
   },
   "entrypoints": [
-    "static/css/main.16b2885b.css",
-    "static/js/main.035675a6.js"
+    "static/css/main.67528402.css",
+    "static/js/main.8fdc77cf.js"
   ]
 }
