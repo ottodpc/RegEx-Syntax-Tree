@@ -8,7 +8,7 @@ import RegExTester from "./pages/RegExTester";
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <div>
         <Navbar />
         <div className="py-8">

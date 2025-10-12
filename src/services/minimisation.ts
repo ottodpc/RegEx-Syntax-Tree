@@ -52,6 +52,9 @@ function minimizeDFA(automaton: Automaton): Automaton {
     findCorrespondingState(minimizedStates, acceptState, partitions)
   );
 
+  // Add all minimized states to the automaton
+  minimizedAutomaton.states = minimizedStates;
+
   for (const partition of partitions) {
     const representativeState = [...partition][0];
 

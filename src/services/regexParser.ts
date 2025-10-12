@@ -15,11 +15,11 @@ const PARENTHESEOUVRANT = 0x16641664;
 const PARENTHESEFERMANT = 0x51515151;
 
 function charToRoot(c: string): number {
-  if (c === ".") return CONCAT;
   if (c === "*") return ETOILE;
   if (c === "|") return ALTERN;
   if (c === "(") return PARENTHESEOUVRANT;
   if (c === ")") return PARENTHESEFERMANT;
+  if (c === ".") return DOT;
   return c.charCodeAt(0);
 }
 
@@ -67,7 +67,7 @@ function processParentheses(trees: RegExTree[]): RegExTree[] {
       if (result.length === 0) throw new Error("Unmatched parentheses");
       result.pop();
       found = true;
-      result.push(new RegExTree(CONCAT, [processRegExTree(content)]));
+      result.push(processRegExTree(content));
     } else {
       result.push(t);
     }
@@ -103,12 +103,15 @@ function containsConcat(trees: RegExTree[]): boolean {
   let foundFirst = false;
 
   for (const t of trees) {
-    if (!foundFirst && t.root !== ALTERN) {
+    const isOperand = t.subTrees.length > 0 || t.root !== ALTERN;
+    const isAlternOperator = t.root === ALTERN && t.subTrees.length === 0;
+
+    if (!foundFirst && isOperand) {
       foundFirst = true;
       continue;
     }
-    if (foundFirst && t.root !== ALTERN) return true;
-    if (t.root === ALTERN) foundFirst = false;
+    if (foundFirst && isOperand) return true;
+    if (isAlternOperator) foundFirst = false;
   }
 
   return false;
@@ -120,17 +123,20 @@ function processConcat(trees: RegExTree[]): RegExTree[] {
   let foundFirst = false;
 
   for (const t of trees) {
-    if (!found && !foundFirst && t.root !== ALTERN) {
+    const isOperand = t.subTrees.length > 0 || t.root !== ALTERN;
+    const isAlternOperator = t.root === ALTERN && t.subTrees.length === 0;
+
+    if (!found && !foundFirst && isOperand) {
       foundFirst = true;
       result.push(t);
       continue;
     }
-    if (!found && foundFirst && t.root === ALTERN) {
+    if (!found && foundFirst && isAlternOperator) {
       foundFirst = false;
       result.push(t);
       continue;
     }
-    if (!found && foundFirst && t.root !== ALTERN) {
+    if (!found && foundFirst && isOperand) {
       const last = result.pop()!;
       result.push(new RegExTree(CONCAT, [last, t]));
       found = true;
@@ -169,51 +175,70 @@ function processAltern(trees: RegExTree[]): RegExTree[] {
   return result;
 }
 
+const PLUS = 0xab1115;
+const DOT = 0xd07;
+
+// Expand [a-z] character classes to alternation
+function expandCharClass(pattern: string): string {
+  const charClassRegex = /\[([a-z])-([a-z])\]/g;
+  return pattern.replace(charClassRegex, (match, start, end) => {
+    const chars: string[] = [];
+    for (let i = start.charCodeAt(0); i <= end.charCodeAt(0); i++) {
+      chars.push(String.fromCharCode(i));
+    }
+    return `(${chars.join("|")})`;
+  });
+}
+
+// Expand + operator to equivalent with *
+// a+ becomes (a)(a)*  which is a followed by zero or more a's
+function expandPlus(pattern: string): string {
+  let result = "";
+  for (let i = 0; i < pattern.length; i++) {
+    if (pattern[i] === "+" && i > 0) {
+      // Find what comes before the +
+      if (pattern[i - 1] === ")") {
+        // (abc)+ case - need to find matching (
+        let depth = 1;
+        let j = i - 2;
+        let before = ")";
+        while (j >= 0 && depth > 0) {
+          if (pattern[j] === ")") depth++;
+          if (pattern[j] === "(") depth--;
+          before = pattern[j] + before;
+          j--;
+        }
+        // (expr)+ becomes (expr)(expr)*
+        // We already have (expr) in result, add (expr)*
+        result += before + "*";
+      } else {
+        // Simple character case: a+ → a(a)*
+        // The character is already in result, add (char)*
+        const char = pattern[i - 1];
+        result += "(" + char + ")*";
+      }
+    } else {
+      result += pattern[i];
+    }
+  }
+  return result;
+}
+
 class RegExParser {
-  static CONCAT = 0xc04ca7;
-  static ETOILE = 0xe7011e;
-  static ALTERN = 0xa17e54;
-  static PROTECTION = 0xbaddad;
-  static PARENTHESEOUVRANT = 0x16641664;
-  static PARENTHESEFERMANT = 0x51515151;
-  static DOT = 0xd07;
+  static CONCAT = CONCAT;
+  static ETOILE = ETOILE;
+  static ALTERN = ALTERN;
+  static PLUS = PLUS;
+  static DOT = DOT;
+  static PARENTHESEOUVRANT = PARENTHESEOUVRANT;
+  static PARENTHESEFERMANT = PARENTHESEFERMANT;
 
-  private static regEx: string;
-
-  // Main parsing function
   static parseRegEx(input: string): RegExTree {
-    this.regEx = input;
-    const trees = this.buildTrees();
-    return this.parseConcat(trees);
-  }
-
-  private static buildTrees(): RegExTree[] {
-    const result: RegExTree[] = [];
-    for (let i = 0; i < this.regEx.length; i++) {
-      const c = this.regEx.charAt(i);
-      result.push(new RegExTree(this.charToRoot(c)));
-    }
-    return result;
-  }
-
-  private static charToRoot(c: string): number {
-    if (c === ".") return this.DOT;
-    if (c === "*") return this.ETOILE;
-    if (c === "|") return this.ALTERN;
-    if (c === "(") return this.PARENTHESEOUVRANT;
-    if (c === ")") return this.PARENTHESEFERMANT;
-    return c.charCodeAt(0);
-  }
-
-  private static parseConcat(trees: RegExTree[]): RegExTree {
-    while (trees.length > 1) {
-      const left = trees.shift()!;
-      const right = trees.shift()!;
-      const concatTree = new RegExTree(this.CONCAT, [left, right]);
-      trees.unshift(concatTree);
-    }
-    return trees[0];
+    // Expand character classes and plus operators
+    let expanded = expandCharClass(input);
+    expanded = expandPlus(expanded);
+    return parseRegEx(expanded);
   }
 }
 
-export { parseRegEx, RegExTree, CONCAT, ETOILE, ALTERN, RegExParser };
+export { parseRegEx, RegExTree, CONCAT, ETOILE, ALTERN, PLUS, DOT, RegExParser };

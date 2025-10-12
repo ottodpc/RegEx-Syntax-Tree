@@ -1,11 +1,21 @@
 import { RegExParser, RegExTree } from "./regexParser";
 
+let globalStateIdCounter = 0;
+
+function resetStateIdCounter() {
+  globalStateIdCounter = 0;
+}
+
+function getNextStateId(): number {
+  return globalStateIdCounter++;
+}
+
 class State {
   id: number;
   isAccepting: boolean;
 
-  constructor(id: number, isAccepting = false) {
-    this.id = id;
+  constructor(id?: number, isAccepting = false) {
+    this.id = id !== undefined ? id : getNextStateId();
     this.isAccepting = isAccepting;
   }
 }
@@ -39,7 +49,7 @@ class Automaton {
   }
 
   addState(isAccepting = false): State {
-    const newState = new State(this.states.length, isAccepting);
+    const newState = new State(undefined, isAccepting);
     this.states.push(newState);
     return newState;
   }
@@ -87,10 +97,12 @@ function simulateNFA(automaton: Automaton, input: string): boolean {
     currentStates = move(currentStates, symbol);
   }
 
-  return [...currentStates].some((state) => state === automaton.acceptState);
+  return [...currentStates].some((state) => state.isAccepting);
 }
 
 function syntaxTreeToAutomaton(tree: RegExTree): Automaton {
+  // Note: reset state counter  causes ID conflicts in recursive calls
+
   switch (tree.root) {
     case RegExParser.CONCAT:
       return handleConcat(tree);
@@ -98,6 +110,8 @@ function syntaxTreeToAutomaton(tree: RegExTree): Automaton {
       return handleUnion(tree);
     case RegExParser.ETOILE:
       return handleKleeneStar(tree);
+    case RegExParser.DOT:
+      return handleDot();
     default:
       return handleSymbol(tree.root);
   }
@@ -106,56 +120,132 @@ function syntaxTreeToAutomaton(tree: RegExTree): Automaton {
 function handleConcat(tree: RegExTree): Automaton {
   const leftAutomaton = syntaxTreeToAutomaton(tree.subTrees[0]);
   const rightAutomaton = syntaxTreeToAutomaton(tree.subTrees[1]);
-  leftAutomaton.addTransition(
-    leftAutomaton.acceptState,
-    rightAutomaton.startState,
-    null
+
+  // Remove accepting status from left accept state
+  leftAutomaton.acceptState.isAccepting = false;
+
+  // Only the right accept state should be accepting
+  rightAutomaton.acceptState.isAccepting = true;
+
+  // Merge automata into a new automaton
+  const automaton = new Automaton(
+    leftAutomaton.startState,
+    rightAutomaton.acceptState
   );
-  return new Automaton(leftAutomaton.startState, rightAutomaton.acceptState);
+
+  // Combine all states
+  automaton.states = [...leftAutomaton.states, ...rightAutomaton.states];
+
+  // Combine all transitions and add the epsilon transition to connect them
+  automaton.transitions = [
+    ...leftAutomaton.transitions,
+    ...rightAutomaton.transitions,
+    new Transition(leftAutomaton.acceptState, rightAutomaton.startState, null),
+  ];
+
+  return automaton;
 }
 
 function handleUnion(tree: RegExTree): Automaton {
   const leftAutomaton = syntaxTreeToAutomaton(tree.subTrees[0]);
   const rightAutomaton = syntaxTreeToAutomaton(tree.subTrees[1]);
-  const startState = new State(-1);
-  const acceptState = new State(-2);
+
+  // Remove accepting status from sub-automaton accept states
+  leftAutomaton.acceptState.isAccepting = false;
+  rightAutomaton.acceptState.isAccepting = false;
+
+  const startState = new State();
+  const acceptState = new State(undefined, true);
+
   const automaton = new Automaton(startState, acceptState);
-  automaton.addTransition(startState, leftAutomaton.startState, null);
-  automaton.addTransition(startState, rightAutomaton.startState, null);
-  automaton.addTransition(leftAutomaton.acceptState, acceptState, null);
-  automaton.addTransition(rightAutomaton.acceptState, acceptState, null);
+
+  // Add all states
   automaton.states.push(...leftAutomaton.states, ...rightAutomaton.states);
+
+  // Add all transitions from sub-automata
   automaton.transitions.push(
     ...leftAutomaton.transitions,
     ...rightAutomaton.transitions
   );
+
+  // Add new epsilon transitions
+  automaton.addTransition(startState, leftAutomaton.startState, null);
+  automaton.addTransition(startState, rightAutomaton.startState, null);
+  automaton.addTransition(leftAutomaton.acceptState, acceptState, null);
+  automaton.addTransition(rightAutomaton.acceptState, acceptState, null);
+
   return automaton;
 }
 
 function handleKleeneStar(tree: RegExTree): Automaton {
   const innerAutomaton = syntaxTreeToAutomaton(tree.subTrees[0]);
-  const startState = new State(-1);
-  const acceptState = new State(-2);
+
+  // Remove accepting status from inner automaton accept state
+  innerAutomaton.acceptState.isAccepting = false;
+
+  const startState = new State();
+  const acceptState = new State(undefined, true);
+
   const automaton = new Automaton(startState, acceptState);
+
+  // Add all states from inner automaton
+  automaton.states.push(...innerAutomaton.states);
+  automaton.transitions.push(...innerAutomaton.transitions);
+
+  // Epsilon from start to accept (allows zero occurrences)
   automaton.addTransition(startState, acceptState, null);
+  // Epsilon from start to inner start
   automaton.addTransition(startState, innerAutomaton.startState, null);
+  // Epsilon from inner accept back to inner start (loop)
   automaton.addTransition(
     innerAutomaton.acceptState,
     innerAutomaton.startState,
     null
   );
+  // Epsilon from inner accept to final accept
   automaton.addTransition(innerAutomaton.acceptState, acceptState, null);
-  automaton.states.push(...innerAutomaton.states);
-  automaton.transitions.push(...innerAutomaton.transitions);
+
   return automaton;
 }
 
 function handleSymbol(root: number): Automaton {
-  const startState = new State(-1);
-  const acceptState = new State(-2);
+  const startState = new State();
+  const acceptState = new State(undefined, true);
+
   const automaton = new Automaton(startState, acceptState);
   automaton.addTransition(startState, acceptState, String.fromCharCode(root));
+
   return automaton;
 }
 
-export { Automaton, State, Transition, syntaxTreeToAutomaton, simulateNFA };
+function handleDot(): Automaton {
+  // DOT matches any single character
+  // For simplicity, we'll create an automaton that matches common printable ASCII
+  const startState = new State();
+  const acceptState = new State(undefined, true);
+
+  const automaton = new Automaton(startState, acceptState);
+
+  // Add transitions for printable ASCII characters (32-126)
+  for (let i = 32; i <= 126; i++) {
+    automaton.addTransition(startState, acceptState, String.fromCharCode(i));
+  }
+
+  return automaton;
+}
+
+// Wrapper function that ensures state IDs are reset before building the automaton
+function buildAutomatonFromTree(tree: RegExTree): Automaton {
+  resetStateIdCounter();
+  return syntaxTreeToAutomaton(tree);
+}
+
+export {
+  Automaton,
+  State,
+  Transition,
+  syntaxTreeToAutomaton,
+  simulateNFA,
+  resetStateIdCounter,
+  buildAutomatonFromTree,
+};

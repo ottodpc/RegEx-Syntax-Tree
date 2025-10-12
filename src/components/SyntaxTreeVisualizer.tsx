@@ -10,9 +10,7 @@ const SyntaxTreeVisualizer: React.FC<SyntaxTreeVisualizerProps> = ({
 }) => {
   return (
     <div className="tree-node">
-      {/* Render the root of the current subtree */}
       <div className="node-value">{treeToString(tree.root)}</div>
-      {/* Recursively render children */}
       {tree.subTrees.length > 0 && (
         <div className="children">
           {tree.subTrees.map((subTree, index) => (

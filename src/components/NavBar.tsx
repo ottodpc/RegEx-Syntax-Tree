@@ -9,10 +9,8 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    // TODO : Navbar responsive
     <nav className="fixed z-10 w-full bg-white shadow-md">
       <div className="container flex items-center justify-between px-4 py-4 mx-auto">
-        {/* NOTE : Logo */}
         <div className="text-2xl font-bold">
           <Link to="/" className="text-black no-underline">
             <img
@@ -24,7 +22,6 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
 
-        {/* NOTE : Desktop Menu */}
         <div className="hidden space-x-8 md:flex">
           <Link
             to="/languages"
@@ -56,7 +53,6 @@ const Navbar: React.FC = () => {
           </a>
         </div>
 
-        {/* NOTE : Mobile Menu Button */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
@@ -89,7 +85,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* NOTE : Mobile Menu */}
       {isOpen && (
         <div className="bg-white shadow-md md:hidden">
           <Link
@@ -116,7 +111,7 @@ const Navbar: React.FC = () => {
             The Gutenberg Project
           </a>
           <a
-            href="https://www-apr.lip6.fr/~buixuan/daar2024"
+            href="https://www-apr.lip6.fr/~buixuan/daar2025"
             target="_blank"
             rel="noopener noreferrer"
             className="block px-4 py-2 text-black no-underline hover:bg-gray-200"
